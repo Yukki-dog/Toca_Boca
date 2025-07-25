@@ -490,19 +490,36 @@
     id: ''
   };
 
-  // Мебель в комнатах
-  // rooms — массив комнат, в каждой: wallpaperPattern, wallpaperColor, floorPattern, floorColor, furniture[]
-  // furniture[]: {id, x, y}
-  // Начинаем с 3 пустых комнат
-  for(let i=0; i<totalRooms; i++) {
-    rooms.push({
-      wallpaperPattern: '■◍◯∪□ꙮ※ↈ×',
-      wallpaperColor: '#c8f7dc',
-      floorPattern: '||||||||||||||||||||',
-      floorColor: '#a3d2ca',
-      furniture: []
-    });
-  }
+ // Сначала объявляем глобальные массивы с паттернами (вне цикла комнат)
+const wallPatterns = [
+  '■■■■■■',           // плотные квадраты
+  '◍ ◍ ◍ ◍',           // кружочки с пробелами
+  'ꙮ  ꙮ  ꙮ',           // необычные символы, редко
+  'ↈↈↈↈↈ',             // плотные узоры
+  '※ ※ ※ ※',         // звездочки
+  '◯\n◯\n◯',           // вертикально
+  '∪ ∪ ∪ ∪',          // полукруги
+];
+
+const floorPatterns = [
+  '||||||||||||',     // деревянный пол
+  '⨷   ⨷   ⨷',        // разбросанные камешки
+  ':::::::',           // ковровое покрытие
+  '⧫ ⧫ ⧫ ⧫',         // плитка
+  '░░░░░░░░',           // мягкий градиент
+  '≈≈≈≈≈≈≈',           // волны
+];
+
+// Создаём комнаты с выбранными по умолчанию паттернами
+for(let i=0; i<totalRooms; i++) {
+  rooms.push({
+    wallpaperPattern: wallPatterns[0],  // первый паттерн стен по умолчанию
+    wallpaperColor: '#c8f7dc',           // цвет стены по умолчанию
+    floorPattern: floorPatterns[0],      // первый паттерн пола по умолчанию
+    floorColor: '#a3d2ca',               // цвет пола по умолчанию
+    furniture: [],                       // пустая мебель
+  });
+}
 
   // --- ЭЛЕМЕНТЫ DOM ---
   const wallpaperSelect = document.getElementById('wallpaper-pattern');
