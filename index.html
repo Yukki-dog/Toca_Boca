@@ -2,296 +2,262 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Милая квартира с комнатами</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Милая квартира — бета</title>
   <style>
-    body {
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      background: #fce7f3;
-      overflow-x: hidden;
+    body, html {
+      margin:0; padding:0; height:100vh; overflow:hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #faf8f5;
+      display: flex;
+      flex-direction: column;
       user-select: none;
     }
-
-    #room-container {
-      width: 100vw;
-      height: 90vh;
+    #roomContainer {
+      flex: 1;
       position: relative;
-      margin-top: 1rem;
+      background: repeating-linear-gradient(
+        45deg,
+        #cde7d8,
+        #cde7d8 20px,
+        #b5d6c1 20px,
+        #b5d6c1 40px
+      );
+      transition: background 0.5s ease;
       overflow: hidden;
-      border-radius: 1rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      background-size: cover;
-      background-position: center;
-      transition: background-image 0.6s ease;
     }
-
-    .floor {
+    #floorDiv {
       position: absolute;
       bottom: 0;
+      left: 0;
       width: 100%;
-      height: 30%;
-      transition: background 0.6s ease;
-      border-top-left-radius: 1rem;
-      border-top-right-radius: 1rem;
-      z-index: 0;
+      height: 150px;
+      background: repeating-linear-gradient(
+        to right,
+        #d3c3a4,
+        #d3c3a4 30px,
+        #cbb793 30px,
+        #cbb793 60px
+      );
+      box-shadow: inset 0 5px 15px rgba(0,0,0,0.15);
+      transition: background 0.5s ease;
+      z-index: 1;
     }
-
-    .furniture {
-      width: 70px;
-      height: 70px;
-      position: absolute;
-      cursor: grab;
-      user-select: none;
-      transition: transform 0.2s ease;
-      border-radius: 0.5rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    }
-    .furniture:active {
-      cursor: grabbing;
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 1000;
-    }
-
-    .controls {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 1rem;
-      user-select: none;
-    }
-
-    button {
+    #furniturePanel {
+      height: 130px;
       background: #fff;
-      padding: 0.5rem 1.2rem;
-      border-radius: 0.75rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      font-weight: bold;
-      color: #b91c1c;
-      transition: background 0.3s ease;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #fbcfe8;
-    }
-
-    #furniture-panel {
-      background: #fff;
-      padding: 0.5rem;
-      border-radius: 0.75rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      border-top: 1px solid #ddd;
       display: flex;
-      gap: 1rem;
-      margin-top: 1rem;
-      justify-content: center;
-      user-select: none;
+      overflow-x: auto;
+      padding: 10px;
+      box-sizing: border-box;
     }
-
-    #furniture-panel img {
-      width: 60px;
-      height: 60px;
-      border-radius: 0.5rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    #furniturePanel img {
+      width: 80px;
+      height: 80px;
+      margin-right: 10px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       cursor: pointer;
       transition: transform 0.3s ease;
     }
-    #furniture-panel img:hover {
+    #furniturePanel img:hover {
       transform: scale(1.1);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-
-    .fade-enter {
-      opacity: 0;
-      transform: translateX(100%);
+    .furniture {
+      position: absolute;
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.3s ease, opacity 0.4s ease;
+      will-change: transform;
+      z-index: 10;
     }
-    .fade-enter-active {
-      opacity: 1;
-      transform: translateX(0);
-      transition: all 0.5s ease;
+    .furniture:active {
+      cursor: grabbing;
     }
-    .fade-exit {
-      opacity: 1;
-      transform: translateX(0);
+    #controls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 8px 0;
+      user-select: none;
     }
-    .fade-exit-active {
-      opacity: 0;
-      transform: translateX(-100%);
-      transition: all 0.5s ease;
+    button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      background: #a3d9b1;
+      color: #14532d;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #79c06c;
     }
   </style>
 </head>
 <body>
 
-  <h1 class="text-center text-3xl font-bold text-pink-600 mt-4 select-none">Милая квартира с комнатами 💖</h1>
-
-  <div class="controls">
-    <button id="left-btn" aria-label="Предыдущая комната">&larr; Назад</button>
-    <button id="right-btn" aria-label="Следующая комната">Вперёд &rarr;</button>
+  <div id="roomContainer">
+    <div id="floorDiv"></div>
   </div>
 
-  <div id="room-container" aria-live="polite" aria-atomic="true" role="region" tabindex="0">
-    <div id="floor" class="floor"></div>
+  <div id="controls">
+    <button id="leftBtn">← Назад</button>
+    <button id="rightBtn">Вперёд →</button>
   </div>
 
-  <div id="furniture-panel" aria-label="Панель мебели" role="region">
-    <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="Диван" title="Диван" data-type="sofa" />
-    <img src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png" alt="Кресло" title="Кресло" data-type="armchair" />
-    <img src="https://cdn-icons-png.flaticon.com/512/2462/2462719.png" alt="Стул" title="Стул" data-type="chair" />
-    <img src="https://cdn-icons-png.flaticon.com/512/1128/1128551.png" alt="Стол" title="Стол" data-type="table" />
-  </div>
+  <div id="furniturePanel"></div>
 
-  <div class="controls mt-4">
-    <label for="wallpaper-select" class="text-pink-700 font-semibold mr-2 select-none">Обои:</label>
-    <select id="wallpaper-select" aria-label="Выбор обоев">
-      <option value="wall1">Розовые цветочки</option>
-      <option value="wall2">Мятные полосы</option>
-      <option value="wall3">Горошек</option>
-    </select>
+<script>
+  const roomContainer = document.getElementById('roomContainer');
+  const floorDiv = document.getElementById('floorDiv');
+  const furniturePanel = document.getElementById('furniturePanel');
+  const leftBtn = document.getElementById('leftBtn');
+  const rightBtn = document.getElementById('rightBtn');
 
-    <label for="floor-select" class="text-pink-700 font-semibold ml-6 mr-2 select-none">Пол:</label>
-    <select id="floor-select" aria-label="Выбор пола">
-      <option value="floor1">Дерево светлое</option>
-      <option value="floor2">Паркет тёмный</option>
-      <option value="floor3">Плитка мята</option>
-    </select>
-  </div>
+  // Текстуры пола и обоев (CSS паттерны)
+  const wallpaperPatterns = [
+    'repeating-linear-gradient(45deg, #cde7d8, #cde7d8 20px, #b5d6c1 20px, #b5d6c1 40px)',
+    'repeating-radial-gradient(circle at center, #ffe4e1 0, #f4a8a8 30px)',
+    'repeating-linear-gradient(90deg, #f0f3f5 0, #f0f3f5 10px, #d0d5db 10px, #d0d5db 20px)',
+    'repeating-linear-gradient(135deg, #f9e7e7, #f9e7e7 15px, #fadede 15px, #fadede 30px)'
+  ];
+  const floorPatterns = [
+    'repeating-linear-gradient(to right, #d3c3a4, #d3c3a4 30px, #cbb793 30px, #cbb793 60px)',
+    'repeating-linear-gradient(to right, #8b7d6b, #8b7d6b 15px, #a79987 15px, #a79987 30px)',
+    'repeating-linear-gradient(45deg, #f0e6d2, #f0e6d2 20px, #dccba7 20px, #dccba7 40px)',
+    'repeating-linear-gradient(to right, #e6e6e6, #e6e6e6 25px, #c0c0c0 25px, #c0c0c0 50px)'
+  ];
 
-  <script>
-    // Комнаты: 3 штуки с разными обоями и полом по умолчанию
-    const rooms = [
-      { id: 0, wallpaper: 'wall1', floor: 'floor1', furnitures: [] },
-      { id: 1, wallpaper: 'wall2', floor: 'floor2', furnitures: [] },
-      { id: 2, wallpaper: 'wall3', floor: 'floor3', furnitures: [] },
-    ];
-    let currentRoom = 0;
+  // Мебель — расширенный список (20 для примера, потом можно добавить)
+  const furnitureItems = [
+    { type: 'sofa', src: 'https://i.postimg.cc/2jX9v8DB/sofa.png', name: 'Диван' },
+    { type: 'chair', src: 'https://i.postimg.cc/3x87wQ6D/chair.png', name: 'Кресло' },
+    { type: 'table', src: 'https://i.postimg.cc/y6Xm8MWr/table.png', name: 'Стол' },
+    { type: 'lamp', src: 'https://i.postimg.cc/9f3fF5mh/lamp.png', name: 'Лампа' },
+    { type: 'plant', src: 'https://i.postimg.cc/jdX0RxwG/plant.png', name: 'Растение' },
+    { type: 'bed', src: 'https://i.postimg.cc/7hC5YCRs/bed.png', name: 'Кровать' },
+    { type: 'bookshelf', src: 'https://i.postimg.cc/3NxVQvD0/bookshelf.png', name: 'Книжный шкаф' },
+    { type: 'carpet', src: 'https://i.postimg.cc/Ls8LHqgm/carpet.png', name: 'Ковер' },
+    { type: 'desk', src: 'https://i.postimg.cc/yN1jhYLD/desk.png', name: 'Письменный стол' },
+    { type: 'tv', src: 'https://i.postimg.cc/B6V4kFvx/tv.png', name: 'Телевизор' },
+    { type: 'clock', src: 'https://i.postimg.cc/J4Zngwxf/clock.png', name: 'Часы' },
+    { type: 'dresser', src: 'https://i.postimg.cc/sx6fPxGd/dresser.png', name: 'Комод' },
+    { type: 'stool', src: 'https://i.postimg.cc/RZcfkTsW/stool.png', name: 'Табурет' },
+    { type: 'sofa2', src: 'https://i.postimg.cc/Px4rHXrm/sofa2.png', name: 'Диван 2' },
+    { type: 'chair2', src: 'https://i.postimg.cc/sx66pxLV/chair2.png', name: 'Кресло 2' },
+    { type: 'shelf', src: 'https://i.postimg.cc/MTXqFZB5/shelf.png', name: 'Полка' },
+    { type: 'plant2', src: 'https://i.postimg.cc/DzLdR4j2/plant2.png', name: 'Растение 2' },
+    { type: 'floorlamp', src: 'https://i.postimg.cc/4NmnzMs7/floorlamp.png', name: 'Торшер' },
+    { type: 'chair3', src: 'https://i.postimg.cc/0y9v9FKb/chair3.png', name: 'Кресло 3' },
+    { type: 'desk2', src: 'https://i.postimg.cc/t4hFNrqz/desk2.png', name: 'Письменный стол 2' }
+  ];
 
-    const wallpaperImages = {
-      wall1: 'https://i.pinimg.com/originals/ed/aa/0c/edaa0cde2717d70dbf4d6875eb7e0b24.jpg',  // милый розовый фон с цветочками
-      wall2: 'https://i.pinimg.com/originals/56/8e/67/568e6710e1bdbfb4c79e8392ebc7d4e0.jpg',  // мятные полосы
-      wall3: 'https://cdn.wallpapersafari.com/11/18/QMJe9X.jpg',                                  // зеленый горошек
-    };
+  let rooms = [
+    { wallpaper: 0, floor: 0, furnitures: [] },
+    { wallpaper: 1, floor: 1, furnitures: [] },
+    { wallpaper: 2, floor: 2, furnitures: [] }
+  ];
 
-    const floorImages = {
-      floor1: 'https://images.unsplash.com/photo-1505692952044-86409c1412b2?auto=format&fit=crop&w=800&q=80', // светлое дерево
-      floor2: 'https://images.unsplash.com/photo-1543076447-215ad9ba6924?auto=format&fit=crop&w=800&q=80', // темный паркет
-      floor3: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=800&q=80', // плитка мятная
-    };
+  let currentRoom = 0;
 
-    const roomContainer = document.getElementById('room-container');
-    const floorDiv = document.getElementById('floor');
-    const wallpaperSelect = document.getElementById('wallpaper-select');
-    const floorSelect = document.getElementById('floor-select');
-    const leftBtn = document.getElementById('left-btn');
-    const rightBtn = document.getElementById('right-btn');
-    const furniturePanel = document.getElementById('furniture-panel');
+  function loadRoom(index) {
+    if(index < 0) index = rooms.length - 1;
+    if(index >= rooms.length) index = 0;
+    currentRoom = index;
+    const room = rooms[currentRoom];
 
-    // Загружаем комнату
-    function loadRoom(index, direction = 0) {
-      if (index < 0) index = rooms.length -1;
-      if (index >= rooms.length) index = 0;
-      currentRoom = index;
-      const room = rooms[currentRoom];
+    roomContainer.style.opacity = '0';
+    setTimeout(() => {
+      roomContainer.style.background = wallpaperPatterns[room.wallpaper];
+      floorDiv.style.background = floorPatterns[room.floor];
 
-      // Анимация смены комнаты (сдвиг слева или справа)
-      roomContainer.style.opacity = '0';
-      setTimeout(() => {
-        roomContainer.style.backgroundImage = `url(${wallpaperImages[room.wallpaper]})`;
-        floorDiv.style.backgroundImage = `url(${floorImages[room.floor]})`;
-        wallpaperSelect.value = room.wallpaper;
-        floorSelect.value = room.floor;
-
-        // Удаляем старую мебель
-        roomContainer.querySelectorAll('.furniture').forEach(el => el.remove());
-        // Добавляем мебель комнаты
-        room.furnitures.forEach(furn => {
-          const f = createFurnitureElement(furn.type, furn.x, furn.y);
-          roomContainer.appendChild(f);
-        });
-
-        roomContainer.style.opacity = '1';
-      }, 300);
-    }
-
-    // Создать элемент мебели
-    function createFurnitureElement(type, x = 50, y = 200) {
-      const el = document.createElement('img');
-      el.classList.add('furniture');
-      el.setAttribute('draggable', 'false');
-      el.src = furniturePanel.querySelector(`img[data-type="${type}"]`).src;
-      el.alt = type;
-      el.style.left = x + 'px';
-      el.style.top = y + 'px';
-
-      // Drag and drop мебель
-      let offsetX, offsetY;
-      el.addEventListener('mousedown', e => {
-        offsetX = e.clientX - el.getBoundingClientRect().left;
-        offsetY = e.clientY - el.getBoundingClientRect().top;
-        el.style.cursor = 'grabbing';
-
-        function onMouseMove(e) {
-          el.style.left = (e.clientX - offsetX) + 'px';
-          el.style.top = (e.clientY - offsetY) + 'px';
-        }
-
-        function onMouseUp(e) {
-          document.removeEventListener('mousemove', onMouseMove);
-          document.removeEventListener('mouseup', onMouseUp);
-          el.style.cursor = 'grab';
-          // Сохраняем позицию в текущей комнате
-          const room = rooms[currentRoom];
-          const furn = room.furnitures.find(f => f.el === el);
-          if (furn) {
-            furn.x = parseInt(el.style.left);
-            furn.y = parseInt(el.style.top);
-          }
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+      // Удаляем старую мебель
+      roomContainer.querySelectorAll('.furniture').forEach(el => el.remove());
+      // Добавляем мебель
+      room.furnitures.forEach(furn => {
+        const el = createFurnitureElement(furn.type, furn.x, furn.y);
+        roomContainer.appendChild(el);
       });
 
-      return el;
-    }
+      roomContainer.style.opacity = '1';
+    }, 350);
+  }
 
-    // Добавить мебель в комнату при клике по панели
-    furniturePanel.addEventListener('click', e => {
-      if (e.target.tagName !== 'IMG') return;
-      const type = e.target.getAttribute('data-type');
-      const room = rooms[currentRoom];
-      const newFurn = {type, x: 100, y: 220, el: null};
-      room.furnitures.push(newFurn);
+  function createFurnitureElement(type, x=100, y=220) {
+    const item = furnitureItems.find(f => f.type === type);
+    if(!item) return null;
+    const el = document.createElement('img');
+    el.classList.add('furniture');
+    el.src = item.src;
+    el.alt = item.name;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
 
-      const el = createFurnitureElement(type, newFurn.x, newFurn.y);
-      newFurn.el = el;
-      roomContainer.appendChild(el);
-    });
+    // Drag and drop
+    let offsetX, offsetY;
+    el.addEventListener('mousedown', e => {
+      offsetX = e.clientX - el.getBoundingClientRect().left;
+      offsetY = e.clientY - el.getBoundingClientRect().top;
+      el.style.cursor = 'grabbing';
 
-    wallpaperSelect.addEventListener('change', e => {
-      rooms[currentRoom].wallpaper = e.target.value;
-      roomContainer.style.backgroundImage = `url(${wallpaperImages[e.target.value]})`;
-    });
-
-    floorSelect.addEventListener('change', e => {
-      rooms[currentRoom].floor = e.target.value;
-      floorDiv.style.backgroundImage = `url(${floorImages[e.target.value]})`;
-    });
-
-    leftBtn.addEventListener('click', () => loadRoom(currentRoom - 1));
-    rightBtn.addEventListener('click', () => loadRoom(currentRoom + 1));
-
-    // Управление клавишами ← и →
-    window.addEventListener('keydown', e => {
-      if (e.key === 'ArrowLeft') {
-        loadRoom(currentRoom - 1);
-      } else if (e.key === 'ArrowRight') {
-        loadRoom(currentRoom + 1);
+      function onMove(e) {
+        el.style.left = (e.clientX - offsetX) + 'px';
+        el.style.top = (e.clientY - offsetY) + 'px';
       }
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        el.style.cursor = 'grab';
+
+        // Обновить позицию в комнате
+        const furn = rooms[currentRoom].furnitures.find(f => f.el === el);
+        if(furn) {
+          furn.x = parseInt(el.style.left);
+          furn.y = parseInt(el.style.top);
+        }
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
     });
 
-    // Загрузка первой комнаты при старте
-    loadRoom(0);
-  </script>
+    return el;
+  }
+
+  furnitureItems.forEach(item => {
+    const img = document.createElement('img');
+    img.src = item.src;
+    img.alt = item.name;
+    img.setAttribute('data-type', item.type);
+    furniturePanel.appendChild(img);
+  });
+
+  furniturePanel.addEventListener('click', e => {
+    if(e.target.tagName === 'IMG') {
+      const type = e.target.getAttribute('data-type');
+      const el = createFurnitureElement(type);
+      if(el) {
+        rooms[currentRoom].furnitures.push({type, x: 100, y: 220, el});
+        roomContainer.appendChild(el);
+      }
+    }
+  });
+
+  leftBtn.addEventListener('click', () => loadRoom(currentRoom - 1));
+  rightBtn.addEventListener('click', () => loadRoom(currentRoom + 1));
+
+  document.addEventListener('keydown', e => {
+    if(e.key === 'ArrowLeft') loadRoom(currentRoom - 1);
+    if(e.key === 'ArrowRight') loadRoom(currentRoom + 1);
+  });
+
+  loadRoom(currentRoom);
+</script>
+
 </body>
 </html>
+
