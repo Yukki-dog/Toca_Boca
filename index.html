@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Квартира 🌸 Бета</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #ffe4f1;
+      font-family: 'Comic Sans MS', sans-serif;
+    }
+    .furniture {
+      width: 64px;
+      height: 64px;
+      position: absolute;
+      cursor: grab;
+    }
+  </style>
+</head>
+<body class="relative h-screen overflow-hidden">
+
+  <!-- Верхняя панель -->
+  <div class="fixed top-0 w-full bg-pink-200 p-3 flex justify-between items-center z-50">
+    <h1 class="text-xl font-bold text-pink-800">Твоя милая квартира 🏠</h1>
+    <button onclick="toggleFurniturePanel()" class="bg-white px-4 py-2 rounded-xl shadow hover:bg-pink-100 transition">
+      🛋️ Мебель
+    </button>
+  </div>
+
+  <!-- Панель мебели -->
+  <div id="furniturePanel" class="fixed bottom-0 left-0 w-full bg-white border-t-2 border-pink-300 p-3 flex gap-4 justify-center hidden z-50">
+    <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="Диван" draggable="false" onclick="addFurniture(this.src)" class="w-12 h-12 hover:scale-110 transition">
+    <img src="https://cdn-icons-png.flaticon.com/512/1128/1128551.png" alt="Кровать" draggable="false" onclick="addFurniture(this.src)" class="w-12 h-12 hover:scale-110 transition">
+    <img src="https://cdn-icons-png.flaticon.com/512/1046/1046857.png" alt="Кресло" draggable="false" onclick="addFurniture(this.src)" class="w-12 h-12 hover:scale-110 transition">
+    <img src="https://cdn-icons-png.flaticon.com/512/2462/2462719.png" alt="Стол" draggable="false" onclick="addFurniture(this.src)" class="w-12 h-12 hover:scale-110 transition">
+  </div>
+
+  <!-- Игровая зона -->
+  <div id="room" class="w-full h-full relative pt-20">
+    <!-- Мебель будет сюда добавляться -->
+  </div>
+
+  <script>
+    function toggleFurniturePanel() {
+      const panel = document.getElementById('furniturePanel');
+      panel.classList.toggle('hidden');
+    }
+
+    function addFurniture(src) {
+      const item = document.createElement('img');
+      item.src = src;
+      item.className = 'furniture';
+      item.style.left = '150px';
+      item.style.top = '150px';
+      makeDraggable(item);
+      document.getElementById('room').appendChild(item);
+    }
+
+    function makeDraggable(el) {
+      let isDragging = false;
+      let offsetX = 0, offsetY = 0;
+
+      el.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        offsetX = e.clientX - el.offsetLeft;
+        offsetY = e.clientY - el.offsetTop;
+        el.style.zIndex = 1000;
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          el.style.left = (e.clientX - offsetX) + 'px';
+          el.style.top = (e.clientY - offsetY) + 'px';
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        el.style.zIndex = '';
+      });
+    }
+  </script>
+</body>
+</html>
