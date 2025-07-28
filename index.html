@@ -3,643 +3,1123 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Мой уютный дом</title>
+<title>Уютный Домик</title>
 <style>
-  body {
-    margin: 0; font-family: Arial, sans-serif;
-    background: #f0f0f0;
-    overflow: hidden;
+  /* Reset и базовые стили */
+  * {
+    box-sizing: border-box;
+  }
+  body, html {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    color: #333;
+    user-select: none;
   }
   #app {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
     position: relative;
-    width: 100vw; height: 100vh;
-    overflow: hidden;
   }
-  /* Комнаты */
-  #room-container {
-    position: absolute; top: 40px; left: 150px; right: 0; bottom: 0;
-    background: #fff;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .room {
-    width: 100%; height: 100%;
-    position: absolute;
-    top:0; left:0;
-    transition: opacity 0.5s ease;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .room.active {
-    opacity: 1;
-    pointer-events: all;
-  }
-
-  /* Панель мебели */
-  #furniture-panel {
-    position: absolute;
-    top: 40px; left: 0; bottom: 0;
-    width: 150px;
-    background: rgba(255 255 255 / 0.95);
-    border-right: 2px solid #ccc;
-    overflow-y: auto;
-    padding: 10px;
-    display: none;
-  }
-  #furniture-panel.active {
-    display: block;
-  }
-  #furniture-panel h2 {
-    margin: 0 0 10px;
-    font-size: 18px;
-    text-align: center;
-  }
-  .furniture-item {
-    cursor: grab;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 5px;
-    text-align: center;
-    user-select: none;
-  }
-  .furniture-item img {
-    max-width: 100%;
-    display: block;
-    margin: 0 auto;
-    background: transparent;
-  }
-
-  /* Интерфейс */
-  #top-bar {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 40px;
-    background: #333;
-    color: #eee;
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-    gap: 10px;
-  }
-  #top-bar button {
-    background: #555;
-    border: none;
-    color: #eee;
-    padding: 6px 12px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-weight: bold;
-    user-select: none;
-  }
-  #top-bar button:hover {
-    background: #777;
-  }
-
-  /* Профиль (полноэкранный) */
-  #profile-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0 0 0 / 0.75);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  #profile-overlay.active {
-    display: flex;
-  }
-  #profile-window {
-    background: #fff;
-    border-radius: 10px;
-    width: 400px;
-    max-width: 90vw;
-    max-height: 90vh;
+  /* Левая панель - мебель */
+  #panel-furniture {
+    background: rgba(255 255 255 / 0.9);
+    width: 320px;
+    max-width: 35vw;
+    box-shadow: 3px 0 10px rgba(0,0,0,0.1);
     padding: 20px;
     overflow-y: auto;
+    transition: transform 0.3s ease;
+    z-index: 15;
   }
-  #profile-window h2 {
+  #panel-furniture.hidden {
+    transform: translateX(-100%);
+  }
+  #panel-furniture h2 {
     margin-top: 0;
+    font-weight: 600;
+    color: #555;
   }
-  #profile-window label {
-    display: block;
-    margin-top: 10px;
-    font-weight: bold;
+  .furniture-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
   }
-  #profile-window input[type=text] {
-    width: 100%;
-    padding: 6px 8px;
-    font-size: 16px;
-    margin-top: 5px;
-  }
-  #avatar-preview {
-    font-size: 48px;
-    text-align: center;
-    margin: 10px 0;
-    width: 80px; height: 80px;
-    line-height: 80px;
-    border-radius: 50%;
-    margin-left: auto;
-    margin-right: auto;
+  .furniture-item {
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    background: #e0e7ff;
+    box-shadow: 0 3px 8px rgba(100 100 255 / 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
     user-select: none;
+    position: relative;
+    transition: box-shadow 0.2s ease;
   }
-  #profile-window button {
-    margin-top: 15px;
-    padding: 10px;
-    width: 100%;
-    background: #333;
-    color: white;
+  .furniture-item:active {
+    cursor: grabbing;
+    box-shadow: 0 0 20px #5a7fffaa;
+  }
+  .furniture-item svg {
+    width: 50px;
+    height: 50px;
+    fill: #4a4a8a;
+  }
+  /* Кнопка закрытия панели */
+  #btn-close-furniture {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #a9a9f0;
     border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 20px;
+    color: #fff;
     cursor: pointer;
-    border-radius: 6px;
-    font-size: 16px;
+    user-select: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    transition: background 0.3s ease;
   }
-  #friends-list {
-    margin-top: 15px;
+  #btn-close-furniture:hover {
+    background: #7b7bcf;
   }
-  .friend-item {
+  /* Верхняя панель */
+  #topbar {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    gap: 12px;
+    z-index: 20;
+  }
+  .btn-panel {
+    background: #ffffffdd;
+    border-radius: 28px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 18px;
+    color: #444;
+    cursor: pointer;
+    user-select: none;
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 6px;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: background 0.3s ease;
   }
-  .friend-avatar {
-    font-size: 32px;
-    width: 40px; height: 40px;
-    line-height: 40px;
-    border-radius: 50%;
-    background: #eee;
-    text-align: center;
+  .btn-panel:hover {
+    background: #d0d5ffcc;
+  }
+  .btn-panel.collapsed {
+    width: 40px;
+    justify-content: center;
+    font-size: 24px;
+    padding: 8px;
+    gap: 0;
+  }
+  .btn-panel.collapsed span.text {
+    display: none;
+  }
+  /* Комнаты */
+  #rooms-container {
+    flex: 1;
+    margin-left: 360px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f4ff;
+  }
+  @media (max-width: 900px) {
+    #rooms-container {
+      margin-left: 0;
+    }
+    #panel-furniture {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 30;
+    }
+  }
+  .room {
+    width: 100%;
+    max-width: 900px;
+    height: 600px;
+    background: var(--floor-bg);
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: flex-start;
+    align-content: flex-start;
+    transition: background 0.6s ease;
+  }
+  .room-background {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: var(--wallpaper-bg);
+    background-size: 200% 200%;
+    animation: wallpaperAnimation 20s ease-in-out infinite;
+  }
+  @keyframes wallpaperAnimation {
+    0%, 100% {
+      background-position: 0% 0%;
+    }
+    50% {
+      background-position: 100% 100%;
+    }
+  }
+  /* Мебель в комнате */
+  .furniture-in-room {
+    position: absolute;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    cursor: grab;
+    user-select: none;
+    transition: box-shadow 0.3s ease;
+  }
+  .furniture-in-room.dragging {
+    cursor: grabbing;
+    box-shadow: 0 0 25px #7a7affaa;
+    z-index: 50;
+  }
+  .furniture-controls {
+    position: absolute;
+    top: -32px;
+    right: 0;
+    display: flex;
+    gap: 6px;
+    opacity: 0.85;
+  }
+  .furniture-controls button {
+    background: #aabaffdd;
+    border: none;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-weight: 700;
+    color: #334466cc;
+    font-size: 18px;
+    transition: background 0.3s ease;
     user-select: none;
   }
-  .friend-name {
-    flex-grow: 1;
-    font-weight: bold;
+  .furniture-controls button:hover {
+    background: #7b7bcfdd;
+    color: white;
   }
-  .friend-btn {
-    background: #555;
+  /* Кнопки переключения комнаты */
+  #room-nav {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    display: flex;
+    gap: 10px;
+    z-index: 30;
+  }
+  #room-nav button {
+    background: #aabaffcc;
     border: none;
-    color: #eee;
-    padding: 4px 8px;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
     cursor: pointer;
-    border-radius: 4px;
-    font-size: 14px;
+    font-size: 28px;
+    color: #334466cc;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    user-select: none;
+    transition: background 0.3s ease;
   }
-  .friend-btn:hover {
-    background: #777;
+  #room-nav button:hover {
+    background: #7b7bcfcc;
+    color: white;
+  }
+  /* Профиль */
+  #profile-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+  #profile-modal.active {
+    display: flex;
+  }
+  #profile-content {
+    background: white;
+    width: 460px;
+    max-width: 95vw;
+    border-radius: 16px;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.2);
+    padding: 24px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #profile-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  #profile-tabs button {
+    flex: 1;
+    padding: 10px 0;
+    background: #d0d5ffcc;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    color: #344;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #profile-tabs button.active {
+    background: #7b7bcfcc;
+    color: white;
+  }
+  /* Профиль - содержимое */
+  #profile-section {
+    flex: 1;
+    overflow-y: auto;
+  }
+  /* Аватарка */
+  #avatar-editor {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  #avatar-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 24px;
+    background-color: #aabaff;
+    color: white;
+    font-weight: 900;
+    font-size: 44px;
+    text-align: center;
+    line-height: 80px;
+    user-select: none;
+    box-shadow: 0 5px 15px rgba(70, 70, 120, 0.5);
+  }
+  #avatar-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+  #avatar-controls input[type="text"] {
+    padding: 8px 12px;
+    font-size: 16px;
+    border-radius: 12px;
+    border: 1.8px solid #aabaff;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  #avatar-controls input[type="text"]:focus {
+    border-color: #7b7bcf;
+  }
+  #avatar-controls label {
+    font-size: 14px;
+    color: #667;
+  }
+  #avatar-color-picker {
+    width: 100%;
+    height: 34px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(90deg, #aabaff, #7b7bcf);
+  }
+  /* Ник */
+  #nickname-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  #nickname-editor input[type="text"] {
+    padding: 8px 12px;
+    font-size: 18px;
+    border-radius: 12px;
+    border: 1.8px solid #aabaff;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  #nickname-editor input[type="text"]:focus {
+    border-color: #7b7bcf;
+  }
+  /* ID */
+  #profile-id {
+    padding: 12px 16px;
+    background: #e0e3ff;
+    border-radius: 12px;
+    font-family: monospace;
+    font-size: 16px;
+    user-select: all;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: inset 0 0 8px #9a9fffaa;
+  }
+  #profile-id:hover {
+    background: #c3c7ff;
+  }
+  /* Друзья */
+  #friends-list {
+    margin-top: 12px;
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1.5px solid #aabaff;
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .friend {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .friend-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 20px;
+    background-color: #aabaff;
+    color: white;
+    font-weight: 900;
+    font-size: 22px;
+    text-align: center;
+    line-height: 44px;
+    user-select: none;
+    box-shadow: 0 3px 8px rgba(70, 70, 120, 0.7);
+  }
+  .friend-name {
+    flex: 1;
+    font-weight: 600;
+    font-size: 18px;
+    color: #445;
+  }
+  .friend-buttons {
+    display: flex;
+    gap: 6px;
+  }
+  .friend-buttons button {
+    background: #c3c7ffcc;
+    border: none;
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #334466cc;
+    transition: background 0.3s ease;
+  }
+  .friend-buttons button:hover {
+    background: #7b7bcfcc;
+    color: white;
+  }
+  /* Добавить друга */
+  #add-friend-section {
+    margin-top: 16px;
+    display: flex;
+    gap: 10px;
+  }
+  #add-friend-section input[type="text"] {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 16px;
+    border-radius: 12px;
+    border: 1.8px solid #aabaff;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  #add-friend-section input[type="text"]:focus {
+    border-color: #7b7bcf;
+  }
+  #add-friend-section button {
+    background: #7b7bcf;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #add-friend-section button:hover {
+    background: #5959b9;
+  }
+  /* Звуки */
+  #music-controls {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  #music-controls label {
+    font-weight: 600;
+    color: #445;
+  }
+  #music-select {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1.8px solid #aabaff;
+    background: white;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  #music-volume {
+    width: 100%;
+  }
+  #music-random {
+    margin-top: 6px;
+    background: #7b7bcf;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #music-random:hover {
+    background: #5959b9;
   }
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="top-bar">
-    <button id="profile-btn">П</button>
-    <button id="furniture-btn">М</button>
-    <button id="prev-room-btn">←</button>
-    <button id="next-room-btn">→</button>
-    <button id="add-room-btn">➕</button>
-    <button id="wallpaper-btn">Обои/Пол</button>
-    <button id="share-link-btn">Скопировать ссылку</button>
-    <span id="room-name" style="margin-left:auto; font-weight:bold; color:#eee;">Комната 1</span>
-  </div>
-
-  <div id="furniture-panel">
+  <!-- Левая панель мебель -->
+  <div id="panel-furniture" class="hidden" aria-label="Панель мебели">
+    <button id="btn-close-furniture" aria-label="Закрыть панель мебели">×</button>
     <h2>Мебель</h2>
-    <!-- мебель будет тут -->
+    <div class="furniture-list" id="furniture-list">
+      <!-- Добавим несколько предметов -->
+    </div>
   </div>
 
-  <div id="room-container">
-    <!-- комнаты здесь -->
+  <!-- Верхняя панель -->
+  <div id="topbar">
+    <button class="btn-panel collapsed" id="btn-profile" aria-label="Профиль"><span class="icon">П</span><span class="text">Профиль</span></button>
+    <button class="btn-panel collapsed" id="btn-furniture" aria-label="Мебель"><span class="icon">М</span><span class="text">Мебель</span></button>
   </div>
 
-  <div id="profile-overlay">
-    <div id="profile-window">
-      <h2>Профиль</h2>
-      <label for="nickname-input">Ник (макс 25 символов)</label>
-      <input id="nickname-input" type="text" maxlength="25" />
-      <label for="avatar-input">Аватарка (1-2 символа)</label>
-      <input id="avatar-input" type="text" maxlength="2" />
-      <label for="avatar-bg-input">Цвет фона (HEX, например #ffcc00)</label>
-      <input id="avatar-bg-input" type="text" maxlength="7" placeholder="#336699" />
-      <div id="avatar-preview"></div>
-      <button id="save-profile-btn">Сохранить профиль</button>
+  <!-- Комнаты -->
+  <main id="rooms-container" aria-label="Комнаты">
+    <!-- Комнаты будут добавлены скриптом -->
+  </main>
 
-      <h3>Друзья</h3>
-      <label for="add-friend-id">Добавить друга по ID</label>
-      <input id="add-friend-id" type="text" maxlength="10" />
-      <button id="add-friend-btn">Добавить друга</button>
+  <!-- Навигация комнат -->
+  <div id="room-nav" aria-label="Навигация между комнатами">
+    <button id="prev-room" aria-label="Предыдущая комната">‹</button>
+    <button id="next-room" aria-label="Следующая комната">›</button>
+  </div>
 
-      <div id="friends-list"></div>
+  <!-- Модальное окно профиля -->
+  <div id="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+    <div id="profile-content">
+      <h2 id="profile-title">Профиль</h2>
+      <div id="profile-tabs">
+        <button data-tab="profile" class="active">Профиль</button>
+        <button data-tab="friends">Друзья</button>
+        <button data-tab="id">ID</button>
+        <button data-tab="music">Музыка</button>
+      </div>
+      <section id="profile-section">
+        <!-- Содержимое вкладок -->
+      </section>
+      <button id="close-profile" style="margin-top: 10px; padding: 10px 16px; border: none; background: #7b7bcf; color: white; border-radius: 12px; cursor: pointer;">Закрыть</button>
     </div>
   </div>
 </div>
 
 <script>
-// --- Данные и структура ---
-const defaultFurnitureList = [
-  {id:"chair", name:"Стул", src:"https://i.imgur.com/UXk9W9D.png", width:80, height:80},
-  {id:"table", name:"Стол", src:"https://i.imgur.com/99Njmi2.png", width:100, height:60},
-  {id:"lamp", name:"Лампа", src:"https://i.imgur.com/YJvRjQO.png", width:60, height:100},
-  {id:"sofa", name:"Диван", src:"https://i.imgur.com/7Rl9yAo.png", width:140, height:70},
-  {id:"rug", name:"Ковер", src:"https://i.imgur.com/GJSzwQG.png", width:100, height:60}
-];
+(() => {
+  // ----------- Утилиты -----------
+  const $ = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
 
-// --- Хранилище данных ---
-let profile = {
-  id: generateId(),
-  nickname: "Игрок",
-  avatar: "🐶",
-  avatarBg: "#66ccff",
-  friends: []
-};
+  // ----------- Данные -----------
+  const ROOM_COUNT = 3;
+  const furnitureCatalog = [
+    { id: 'chair', name: 'Стул', svg: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="30" width="32" height="10" fill="#6c63ff"/><rect x="14" y="40" width="8" height="14" fill="#3f3cbb"/><rect x="42" y="40" width="8" height="14" fill="#3f3cbb"/><rect x="18" y="14" width="28" height="12" fill="#a3a0ff" rx="3"/></svg>` },
+    { id: 'sofa', name: 'Диван', svg: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="12" y="32" width="40" height="16" fill="#8f8aff"/><rect x="8" y="48" width="8" height="8" fill="#5a56d4"/><rect x="48" y="48" width="8" height="8" fill="#5a56d4"/><rect x="20" y="20" width="24" height="16" fill="#b0adff" rx="4"/></svg>` },
+    { id: 'table', name: 'Стол', svg: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="12" y="36" width="40" height="12" fill="#7d7aff"/><rect x="12" y="48" width="8" height="8" fill="#4544bb"/><rect x="44" y="48" width="8" height="8" fill="#4544bb"/><rect x="20" y="20" width="24" height="12" fill="#aba8ff" rx="3"/></svg>` },
+    { id: 'lamp', name: 'Лампа', svg: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="22" r="14" fill="#f6e87d"/><rect x="28" y="36" width="8" height="20" fill="#c2be5d" rx="3"/></svg>` },
+    { id: 'carpet', name: 'Ковер', svg: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="14" y="24" width="36" height="24" fill="#d3aaff" rx="10" /></svg>` }
+  ];
 
-let rooms = [
-  createRoom()
-];
-let currentRoomIndex = 0;
+  // ----------- Состояния -----------
+  let rooms = [];
+  let currentRoomIndex = 0;
+  let furnitureIdCounter = 0;
+  let draggingFurniture = null;
+  let dragOffset = {x:0,y:0};
+  let furnitureScaleStep = 0.1;
+  let furnitureRotateStep = 15; // градусов
 
-// --- Состояние мебели (в комнатах) ---
-// Мебель хранится внутри комнаты, каждый объект имеет:
-// idFurniture, x, y, scale, rotation
-function createRoom() {
-  return {
-    name: "Комната " + (rooms.length + 1),
-    wallpaper: { pattern:"■■■■■■", color:"#f5f5dc" },
-    floor: { pattern:"||||||", color:"#deb887" },
-    furniture: []
+  // --- Профиль ---
+  let profile = {
+    nick: 'Гость',
+    avatarText: 'Г',
+    avatarColor: '#aabaff',
+    id: generateId(6),
+    friends: [], // {id, nick, avatarText, avatarColor, roomData}
+    musicIndex: 0,
+    musicVolume: 0.5,
+    musicList: ['1.mp3', '2.mp3', '3.mp3', '4.mp3', '5.mp3']
   };
-}
 
-function generateId() {
-  return Math.random().toString(36).slice(2, 8);
-}
+  // ----------- Инициализация комнат -----------
 
-// --- Элементы DOM ---
-const roomContainer = document.getElementById("room-container");
-const furniturePanel = document.getElementById("furniture-panel");
-const profileOverlay = document.getElementById("profile-overlay");
-const nicknameInput = document.getElementById("nickname-input");
-const avatarInput = document.getElementById("avatar-input");
-const avatarBgInput = document.getElementById("avatar-bg-input");
-const avatarPreview = document.getElementById("avatar-preview");
-const saveProfileBtn = document.getElementById("save-profile-btn");
-const friendsList = document.getElementById("friends-list");
-const addFriendIdInput = document.getElementById("add-friend-id");
-const addFriendBtn = document.getElementById("add-friend-btn");
-
-const profileBtn = document.getElementById("profile-btn");
-const furnitureBtn = document.getElementById("furniture-btn");
-const prevRoomBtn = document.getElementById("prev-room-btn");
-const nextRoomBtn = document.getElementById("next-room-btn");
-const addRoomBtn = document.getElementById("add-room-btn");
-const wallpaperBtn = document.getElementById("wallpaper-btn");
-const shareLinkBtn = document.getElementById("share-link-btn");
-const roomNameSpan = document.getElementById("room-name");
-
-// --- Инициализация ---
-function init() {
-  loadData();
-  updateRoomView();
-  renderFurniturePanel();
-  updateProfileUI();
-  bindEvents();
-}
-window.onload = init;
-
-// --- События ---
-function bindEvents() {
-  profileBtn.onclick = () => toggleProfile(true);
-  furnitureBtn.onclick = () => toggleFurniturePanel();
-  prevRoomBtn.onclick = () => changeRoom(-1);
-  nextRoomBtn.onclick = () => changeRoom(1);
-  addRoomBtn.onclick = () => addRoom();
-  wallpaperBtn.onclick = () => changeWallpaperFloor();
-  saveProfileBtn.onclick = () => saveProfile();
-  addFriendBtn.onclick = () => addFriend();
-  shareLinkBtn.onclick = () => copyShareLink();
-
-  avatarInput.oninput = updateAvatarPreview;
-  avatarBgInput.oninput = updateAvatarPreview;
-
-  nicknameInput.oninput = () => {
-    if(nicknameInput.value.length > 25) nicknameInput.value = nicknameInput.value.slice(0,25);
-  };
-}
-
-// --- Профиль ---
-function toggleProfile(show) {
-  profileOverlay.classList.toggle("active", show);
-  if(show) {
-    nicknameInput.value = profile.nickname;
-    avatarInput.value = profile.avatar;
-    avatarBgInput.value = profile.avatarBg;
-    updateAvatarPreview();
-    renderFriends();
-  }
-}
-function saveProfile() {
-  const nick = nicknameInput.value.trim();
-  if(nick.length === 0) {
-    alert("Ник не может быть пустым");
-    return;
-  }
-  profile.nickname = nick;
-  let avatarVal = avatarInput.value.trim();
-  profile.avatar = avatarVal.length > 0 ? avatarVal : "🙂";
-  let bg = avatarBgInput.value.trim();
-  profile.avatarBg = /^#([0-9A-Fa-f]{6})$/.test(bg) ? bg : "#66ccff";
-  updateProfileUI();
-  saveData();
-  alert("Профиль сохранён");
-  toggleProfile(false);
-}
-
-function updateAvatarPreview() {
-  avatarPreview.textContent = avatarInput.value || "🙂";
-  avatarPreview.style.backgroundColor = avatarBgInput.value || "#66ccff";
-}
-
-function updateProfileUI() {
-  // тут можно обновить аватар и ник в интерфейсе, если нужно
-}
-
-// --- Друзья ---
-function renderFriends() {
-  friendsList.innerHTML = "";
-  profile.friends.forEach(friend => {
-    const div = document.createElement("div");
-    div.className = "friend-item";
-    div.innerHTML = `
-      <div class="friend-avatar" style="background:${friend.avatarBg}">${friend.avatar}</div>
-      <div class="friend-name">${friend.nickname}</div>
-      <button class="friend-btn" onclick="enterFriendRoom('${friend.id}')">Войти</button>
-      <button class="friend-btn" onclick="copyToClipboard('${friend.id}')">ID</button>
-      <button class="friend-btn" onclick="removeFriend('${friend.id}')">Удалить</button>
-    `;
-    friendsList.appendChild(div);
-  });
-}
-
-function addFriend() {
-  const id = addFriendIdInput.value.trim();
-  if(id.length === 0) return alert("Введите ID друга");
-  if(profile.friends.find(f => f.id === id)) return alert("Друг уже добавлен");
-  // Здесь могло бы быть подтверждение с сервером,
-  // но у нас нет серверов — просто добавим друга с минимальными данными
-  profile.friends.push({id, nickname:"Неизвестно", avatar:"❓", avatarBg:"#ccc"});
-  saveData();
-  renderFriends();
-  addFriendIdInput.value = "";
-  alert("Друг добавлен");
-}
-
-function enterFriendRoom(friendId) {
-  alert("Загрузка квартиры друга по ID пока не реализована в этом прототипе.");
-}
-
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text);
-  alert("Скопировано: " + text);
-}
-
-function removeFriend(friendId) {
-  profile.friends = profile.friends.filter(f => f.id !== friendId);
-  saveData();
-  renderFriends();
-}
-
-// --- Комнаты ---
-function updateRoomView() {
-  roomContainer.innerHTML = "";
-  rooms.forEach((room, i) => {
-    const div = document.createElement("div");
-    div.className = "room" + (i === currentRoomIndex ? " active" : "");
-    div.style.background = room.wallpaper.color;
-    div.textContent = room.name;
-    roomContainer.appendChild(div);
-  });
-  roomNameSpan.textContent = rooms[currentRoomIndex].name;
-}
-
-// Изменение комнаты
-function changeRoom(dir) {
-  currentRoomIndex += dir;
-  if(currentRoomIndex < 0) currentRoomIndex = rooms.length -1;
-  if(currentRoomIndex >= rooms.length) currentRoomIndex = 0;
-  updateRoomView();
-}
-// Добавление комнаты
-function addRoom() {
-  rooms.push(createRoom());
-  currentRoomIndex = rooms.length -1;
-  updateRoomView();
-}
-
-// --- Обои и пол ---
-// Пример замены цвета обоев и пола
-function changeWallpaperFloor() {
-  let room = rooms[currentRoomIndex];
-  // Простой циклический выбор цвета
-  const colors = ["#f5f5dc","#ffe4e1","#e6ffe6","#d6e6ff","#fffacd"];
-  const floors = ["#deb887","#c2b280","#a9a9a9","#dcdcdc","#f0e68c"];
-  let ci = colors.indexOf(room.wallpaper.color);
-  let fi = floors.indexOf(room.floor.color);
-  room.wallpaper.color = colors[(ci+1)%colors.length];
-  room.floor.color = floors[(fi+1)%floors.length];
-  updateRoomView();
-  saveData();
-}
-
-// --- Мебель ---
-// Для простоты мебели пока просто текстовые блоки с именами
-function renderFurniturePanel() {
-  furniturePanel.innerHTML = "<h2>Мебель</h2>";
-  defaultFurnitureList.forEach(furn => {
-    const div = document.createElement("div");
-    div.className = "furniture-item";
-    div.draggable = true;
-    div.dataset.id = furn.id;
-    div.innerHTML = `<img src="${furn.src}" alt="${furn.name}" />${furn.name}`;
-    furniturePanel.appendChild(div);
-
-    div.ondragstart = e => {
-      e.dataTransfer.setData("text/plain", furn.id);
+  function createEmptyRoom() {
+    return {
+      wallpaper: {pattern: 'dots', color: '#dde4ff'},
+      floor: {pattern: 'wood', color: '#a17d59'},
+      furniture: []
     };
-  });
-}
+  }
+  for(let i=0; i<ROOM_COUNT; i++) rooms.push(createEmptyRoom());
 
-// Добавление мебели в комнату при отпускании
-roomContainer.ondragover = e => {
-  e.preventDefault();
-};
-roomContainer.ondrop = e => {
-  e.preventDefault();
-  const id = e.dataTransfer.getData("text/plain");
-  const furn = defaultFurnitureList.find(f => f.id === id);
-  if(!furn) return;
-  // Добавляем мебель в комнату
-  const room = rooms[currentRoomIndex];
-  room.furniture.push({
-    idFurniture: furn.id,
-    x: e.offsetX,
-    y: e.offsetY,
-    scale: 1,
-    rotation: 0
-  });
-  updateRoomView();
-  saveData();
-  renderRoomFurniture();
-};
+  // ----------- Сохранение / Загрузка -----------
 
-// Отрисовка мебели в комнате
-function renderRoomFurniture() {
-  const roomDiv = roomContainer.querySelector(".room.active");
-  if(!roomDiv) return;
+  function saveProfile() {
+    localStorage.setItem('profile', JSON.stringify(profile));
+  }
+  function loadProfile() {
+    const p = localStorage.getItem('profile');
+    if(p) {
+      profile = JSON.parse(p);
+      if(!profile.id) profile.id = generateId(6);
+    }
+  }
+  function saveRooms() {
+    localStorage.setItem('rooms', JSON.stringify(rooms));
+  }
+  function loadRooms() {
+    const r = localStorage.getItem('rooms');
+    if(r) rooms = JSON.parse(r);
+  }
 
-  // Удаляем старую мебель
-  [...roomDiv.querySelectorAll(".room-furniture")].forEach(el => el.remove());
+  // ----------- ID генерация -----------
 
-  const room = rooms[currentRoomIndex];
-  room.furniture.forEach((furn, i) => {
-    const dfurn = defaultFurnitureList.find(d => d.id === furn.idFurniture);
-    if(!dfurn) return;
+  function generateId(length = 6) {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let res = '';
+    for(let i=0;i<length;i++) {
+      res += chars.charAt(Math.floor(Math.random()*chars.length));
+    }
+    return res;
+  }
 
-    const el = document.createElement("img");
-    el.src = dfurn.src;
-    el.className = "room-furniture";
-    el.style.position = "absolute";
-    el.style.left = furn.x + "px";
-    el.style.top = furn.y + "px";
-    el.style.width = dfurn.width * furn.scale + "px";
-    el.style.height = dfurn.height * furn.scale + "px";
-    el.style.transform = `rotate(${furn.rotation}rad)`;
-    el.style.transformOrigin = "center center";
-    el.style.cursor = "grab";
-    el.draggable = false;
-    roomDiv.appendChild(el);
+  // ----------- Отрисовка -----------
+
+  const roomsContainer = $('#rooms-container');
+  const furnitureListEl = $('#furniture-list');
+
+  function renderFurnitureCatalog() {
+    furnitureListEl.innerHTML = '';
+    furnitureCatalog.forEach(item=>{
+      const div = document.createElement('div');
+      div.classList.add('furniture-item');
+      div.setAttribute('draggable', 'true');
+      div.dataset.id = item.id;
+      div.title = item.name;
+      div.innerHTML = item.svg;
+      furnitureListEl.appendChild(div);
+    });
+  }
+
+  // Создаем DOM для мебели в комнате
+  function createFurnitureElement(fur) {
+    const div = document.createElement('div');
+    div.classList.add('furniture-in-room');
+    div.style.left = fur.x + 'px';
+    div.style.top = fur.y + 'px';
+    div.style.transform = `rotate(${fur.rotate}deg) scale(${fur.scale})`;
+    div.dataset.id = fur.instanceId;
+    div.innerHTML = getFurnitureSVG(fur.type);
+    // Контролы для мебели
+    const controls = document.createElement('div');
+    controls.className = 'furniture-controls';
+
+    const btnRotate = document.createElement('button');
+    btnRotate.textContent = '⟳';
+    btnRotate.title = 'Повернуть';
+    btnRotate.addEventListener('click', e=>{
+      e.stopPropagation();
+      fur.rotate = (fur.rotate + furnitureRotateStep) % 360;
+      div.style.transform = `rotate(${fur.rotate}deg) scale(${fur.scale})`;
+      saveRooms();
+    });
+
+    const btnScaleUp = document.createElement('button');
+    btnScaleUp.textContent = '+';
+    btnScaleUp.title = 'Увеличить';
+    btnScaleUp.addEventListener('click', e=>{
+      e.stopPropagation();
+      fur.scale = Math.min(3, fur.scale + furnitureScaleStep);
+      div.style.transform = `rotate(${fur.rotate}deg) scale(${fur.scale})`;
+      saveRooms();
+    });
+
+    const btnScaleDown = document.createElement('button');
+    btnScaleDown.textContent = '−';
+    btnScaleDown.title = 'Уменьшить';
+    btnScaleDown.addEventListener('click', e=>{
+      e.stopPropagation();
+      fur.scale = Math.max(0.5, fur.scale - furnitureScaleStep);
+      div.style.transform = `rotate(${fur.rotate}deg) scale(${fur.scale})`;
+      saveRooms();
+    });
+
+    const btnDelete = document.createElement('button');
+    btnDelete.textContent = '✕';
+    btnDelete.title = 'Удалить';
+    btnDelete.addEventListener('click', e=>{
+      e.stopPropagation();
+      const idx = rooms[currentRoomIndex].furniture.findIndex(f=>f.instanceId===fur.instanceId);
+      if(idx!==-1) {
+        rooms[currentRoomIndex].furniture.splice(idx,1);
+        div.remove();
+        saveRooms();
+      }
+    });
+
+    controls.appendChild(btnRotate);
+    controls.appendChild(btnScaleUp);
+    controls.appendChild(btnScaleDown);
+    controls.appendChild(btnDelete);
+    div.appendChild(controls);
 
     // Перетаскивание мебели
-    let drag = false;
-    let startX, startY;
-    el.onmousedown = e => {
-      e.preventDefault();
-      drag = true;
-      startX = e.clientX;
-      startY = e.clientY;
-      document.onmousemove = move;
-      document.onmouseup = stop;
-    };
-    function move(e) {
-      if(!drag) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      furn.x += dx;
-      furn.y += dy;
-      startX = e.clientX;
-      startY = e.clientY;
-      el.style.left = furn.x + "px";
-      el.style.top = furn.y + "px";
-    }
-    function stop() {
-      drag = false;
-      document.onmousemove = null;
-      document.onmouseup = null;
-      saveData();
-    }
+    div.addEventListener('mousedown', e=>{
+      draggingFurniture = {element: div, fur};
+      dragOffset.x = e.clientX - div.offsetLeft;
+      dragOffset.y = e.clientY - div.offsetTop;
+      div.classList.add('dragging');
+    });
 
-    // TODO: добавить масштаб и вращение с помощью колеса мыши или UI
+    return div;
+  }
+  function getFurnitureSVG(type) {
+    const found = furnitureCatalog.find(f=>f.id===type);
+    return found ? found.svg : '';
+  }
+  function renderRoom(index) {
+    roomsContainer.innerHTML = '';
+    const room = rooms[index];
+    const roomDiv = document.createElement('div');
+    roomDiv.classList.add('room');
+    // Стили для пола и стен
+    const wallpaperBG = getWallpaperBG(room.wallpaper);
+    const floorBG = getFloorBG(room.floor);
+    roomDiv.style.setProperty('--wallpaper-bg', wallpaperBG);
+    roomDiv.style.setProperty('--floor-bg', floorBG);
+
+    // Фон стен
+    const wallDiv = document.createElement('div');
+    wallDiv.className = 'room-background';
+    roomDiv.appendChild(wallDiv);
+
+    // Добавляем мебель
+    room.furniture.forEach(fur=>{
+      const furEl = createFurnitureElement(fur);
+      roomDiv.appendChild(furEl);
+    });
+
+    roomsContainer.appendChild(roomDiv);
+  }
+  // Примеры фонов стен (узоры)
+  function getWallpaperBG(wp) {
+    // Можно сделать разные паттерны с CSS или цвета
+    // Пока просто цвет
+    return wp.color;
+  }
+  // Примеры пола
+  function getFloorBG(fl) {
+    return fl.color;
+  }
+
+  // ----------- Переключение комнат -----------
+
+  $('#prev-room').addEventListener('click', () => {
+    currentRoomIndex = (currentRoomIndex + ROOM_COUNT -1) % ROOM_COUNT;
+    renderRoom(currentRoomIndex);
   });
-}
+  $('#next-room').addEventListener('click', () => {
+    currentRoomIndex = (currentRoomIndex +1) % ROOM_COUNT;
+    renderRoom(currentRoomIndex);
+  });
 
-// --- Сохранение/Загрузка ---
-function saveData() {
-  localStorage.setItem("myHomeProfile", JSON.stringify(profile));
-  localStorage.setItem("myHomeRooms", JSON.stringify(rooms));
-}
+  // ----------- Панель мебели -----------
 
-function loadData() {
-  const pr = localStorage.getItem("myHomeProfile");
-  if(pr) profile = JSON.parse(pr);
-  const rm = localStorage.getItem("myHomeRooms");
-  if(rm) rooms = JSON.parse(rm);
-}
+  const panelFurniture = $('#panel-furniture');
+  const btnFurniture = $('#btn-furniture');
+  const btnCloseFurniture = $('#btn-close-furniture');
 
-// --- Копирование ссылки с данными квартиры ---
-function copyShareLink() {
-  const data = {
-    profile,
-    rooms
-  };
-  const encoded = btoa(encodeURIComponent(JSON.stringify(data)));
-  const url = window.location.origin + window.location.pathname + "?data=" + encoded;
-  navigator.clipboard.writeText(url);
-  alert("Ссылка скопирована! Можешь отправить другу.");
-}
+  btnFurniture.addEventListener('click', () => {
+    panelFurniture.classList.toggle('hidden');
+  });
+  btnCloseFurniture.addEventListener('click', () => {
+    panelFurniture.classList.add('hidden');
+  });
 
-// --- Загрузка данных из ссылки ---
-function loadFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  if(params.has("data")) {
-    try {
-      const decoded = decodeURIComponent(atob(params.get("data")));
-      const data = JSON.parse(decoded);
-      profile = data.profile;
-      rooms = data.rooms;
-      currentRoomIndex = 0;
-      saveData();
-    } catch(e) {
-      console.warn("Ошибка при загрузке данных из ссылки", e);
+  // Перетаскивание мебели из панели в комнату
+  furnitureListEl.addEventListener('dragstart', e => {
+    if(e.target.classList.contains('furniture-item')) {
+      e.dataTransfer.setData('text/furniture-id', e.target.dataset.id);
+    }
+  });
+
+  roomsContainer.addEventListener('dragover', e => {
+    e.preventDefault();
+  });
+  roomsContainer.addEventListener('drop', e => {
+    e.preventDefault();
+    const type = e.dataTransfer.getData('text/furniture-id');
+    if(type) {
+      const rect = roomsContainer.getBoundingClientRect();
+      const x = e.clientX - rect.left - 35; // Центрируем
+      const y = e.clientY - rect.top - 35;
+      addFurnitureToRoom(currentRoomIndex, type, x, y);
+      renderRoom(currentRoomIndex);
+      saveRooms();
+    }
+  });
+
+  function addFurnitureToRoom(roomIndex, type, x, y) {
+    const newFurniture = {
+      instanceId: 'f' + (furnitureIdCounter++),
+      type,
+      x,
+      y,
+      scale: 1,
+      rotate: 0
+    };
+    rooms[roomIndex].furniture.push(newFurniture);
+  }
+
+  // ----------- Перетаскивание мебели по комнате -----------
+
+  document.addEventListener('mouseup', () => {
+    if(draggingFurniture) {
+      draggingFurniture.element.classList.remove('dragging');
+      draggingFurniture = null;
+      saveRooms();
+    }
+  });
+  document.addEventListener('mousemove', e => {
+    if(draggingFurniture) {
+      let newX = e.clientX - dragOffset.x;
+      let newY = e.clientY - dragOffset.y;
+      // Ограничим по границам комнаты
+      const roomRect = roomsContainer.getBoundingClientRect();
+      const el = draggingFurniture.element;
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      if(newX < 0) newX = 0;
+      if(newY < 0) newY = 0;
+      if(newX > roomRect.width - w) newX = roomRect.width - w;
+      if(newY > roomRect.height - h) newY = roomRect.height - h;
+
+      draggingFurniture.element.style.left = newX + 'px';
+      draggingFurniture.element.style.top = newY + 'px';
+      draggingFurniture.fur.x = newX;
+      draggingFurniture.fur.y = newY;
+    }
+  });
+
+  // ----------- Профиль -----------
+
+  const profileModal = $('#profile-modal');
+  const btnProfile = $('#btn-profile');
+  const closeProfileBtn = $('#close-profile');
+  const profileTabs = $$('#profile-tabs button');
+  const profileSection = $('#profile-section');
+
+  btnProfile.addEventListener('click', () => {
+    renderProfileTab('profile');
+    profileModal.classList.add('active');
+  });
+  closeProfileBtn.addEventListener('click', () => {
+    profileModal.classList.remove('active');
+  });
+  profileTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      profileTabs.forEach(b => b.classList.remove('active'));
+      tab.classList.add('active');
+      renderProfileTab(tab.dataset.tab);
+    });
+  });
+
+  // --- Рендер вкладок профиля ---
+  function renderProfileTab(tab) {
+    profileSection.innerHTML = '';
+    if(tab === 'profile') {
+      // Аватар и ник
+      const avatarDiv = document.createElement('div');
+      avatarDiv.id = 'avatar-editor';
+
+      const avatarPreview = document.createElement('div');
+      avatarPreview.id = 'avatar-preview';
+      avatarPreview.textContent = profile.avatarText;
+      avatarPreview.style.backgroundColor = profile.avatarColor;
+
+      const avatarControls = document.createElement('div');
+      avatarControls.id = 'avatar-controls';
+
+      const nickLabel = document.createElement('label');
+      nickLabel.textContent = 'Никнейм:';
+      const nickInput = document.createElement('input');
+      nickInput.type = 'text';
+      nickInput.value = profile.nick;
+      nickInput.maxLength = 15;
+      nickInput.addEventListener('input', () => {
+        profile.nick = nickInput.value.trim() || 'Гость';
+        updateAvatarText();
+        saveProfile();
+      });
+
+      const colorLabel = document.createElement('label');
+      colorLabel.textContent = 'Цвет аватарки:';
+      const colorInput = document.createElement('input');
+      colorInput.type = 'color';
+      colorInput.value = profile.avatarColor;
+      colorInput.id = 'avatar-color-picker';
+      colorInput.addEventListener('input', () => {
+        profile.avatarColor = colorInput.value;
+        avatarPreview.style.backgroundColor = profile.avatarColor;
+        saveProfile();
+      });
+
+      avatarControls.appendChild(nickLabel);
+      avatarControls.appendChild(nickInput);
+      avatarControls.appendChild(colorLabel);
+      avatarControls.appendChild(colorInput);
+
+      avatarDiv.appendChild(avatarPreview);
+      avatarDiv.appendChild(avatarControls);
+      profileSection.appendChild(avatarDiv);
+
+      // Обновить текст аватара
+      function updateAvatarText() {
+        const nick = profile.nick.trim();
+        if(nick.length === 0) {
+          profile.avatarText = 'Г';
+        } else {
+          profile.avatarText = nick[0].toUpperCase();
+        }
+        avatarPreview.textContent = profile.avatarText;
+      }
+      updateAvatarText();
+
+    } else if(tab === 'friends') {
+      // Список друзей и добавление
+      const friendsDiv = document.createElement('div');
+      friendsDiv.id = 'friends-list';
+
+      if(profile.friends.length === 0) {
+        friendsDiv.textContent = 'У тебя пока нет друзей. Добавь их по ID!';
+      } else {
+        profile.friends.forEach(friend => {
+          const fdiv = document.createElement('div');
+          fdiv.className = 'friend';
+          const favatar = document.createElement('div');
+          favatar.className = 'friend-avatar';
+          favatar.style.backgroundColor = friend.avatarColor;
+          favatar.textContent = friend.avatarText;
+          const fname = document.createElement('div');
+          fname.className = 'friend-name';
+          fname.textContent = friend.nick;
+          const fbtns = document.createElement('div');
+          fbtns.className = 'friend-buttons';
+          const btnView = document.createElement('button');
+          btnView.textContent = 'Открыть';
+          btnView.title = 'Открыть квартиру друга';
+          btnView.addEventListener('click', () => {
+            alert(`Загружаю квартиру друга: ${friend.nick}\n\n(пока без сетевого функционала)`);
+            // Здесь можно сделать загрузку комнаты друга
+          });
+          const btnRemove = document.createElement('button');
+          btnRemove.textContent = 'Удалить';
+          btnRemove.title = 'Удалить из друзей';
+          btnRemove.addEventListener('click', () => {
+            if(confirm(`Удалить друга ${friend.nick}?`)) {
+              profile.friends = profile.friends.filter(f=>f.id!==friend.id);
+              saveProfile();
+              renderProfileTab('friends');
+            }
+          });
+          fbtns.appendChild(btnView);
+          fbtns.appendChild(btnRemove);
+          fdiv.appendChild(favatar);
+          fdiv.appendChild(fname);
+          fdiv.appendChild(fbtns);
+          friendsDiv.appendChild(fdiv);
+        });
+      }
+      // Добавление друга
+      const addFriendSection = document.createElement('div');
+      addFriendSection.id = 'add-friend-section';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = 'Введите ID друга...';
+      const btnAdd = document.createElement('button');
+      btnAdd.textContent = 'Добавить';
+      btnAdd.addEventListener('click', () => {
+        const id = input.value.trim().toLowerCase();
+        if(!id || id.length < 4) {
+          alert('Введите правильный ID друга (не менее 4 символов)');
+          return;
+        }
+        // Проверка, что друг не сам
+        if(id === profile.id) {
+          alert('Это ваш собственный ID!');
+          return;
+        }
+        // Проверка на повтор
+        if(profile.friends.some(f=>f.id === id)) {
+          alert('Этот друг уже в списке!');
+          return;
+        }
+        // Добавим "друга" заглушку
+        const friend = {
+          id,
+          nick: 'Друг',
+          avatarText: 'Д',
+          avatarColor: '#aabbcc',
+          roomData: null
+        };
+        profile.friends.push(friend);
+        saveProfile();
+        renderProfileTab('friends');
+        input.value = '';
+      });
+      addFriendSection.appendChild(input);
+      addFriendSection.appendChild(btnAdd);
+      friendsDiv.appendChild(addFriendSection);
+
+      profileSection.appendChild(friendsDiv);
+
+    } else if(tab === 'id') {
+      // Показ ID
+      const idDiv = document.createElement('div');
+      idDiv.id = 'profile-id';
+      idDiv.title = 'Нажмите, чтобы скопировать ID';
+      idDiv.textContent = profile.id;
+      idDiv.addEventListener('click', () => {
+        navigator.clipboard.writeText(profile.id)
+          .then(() => alert('ID скопирован в буфер обмена!'));
+      });
+      profileSection.appendChild(idDiv);
+
+    } else if(tab === 'music') {
+      // Музыка
+      const musicDiv = document.createElement('div');
+      musicDiv.id = 'music-controls';
+
+      const label = document.createElement('label');
+      label.textContent = 'Выбор трека:';
+      const select = document.createElement('select');
+      select.id = 'music-select';
+      profile.musicList.forEach((track, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Трек ${i+1}`;
+        select.appendChild(opt);
+      });
+      select.value = profile.musicIndex;
+      select.addEventListener('change', () => {
+        profile.musicIndex = Number(select.value);
+        playMusic();
+        saveProfile();
+      });
+
+      const volLabel = document.createElement('label');
+      volLabel.textContent = 'Громкость:';
+      const volume = document.createElement('input');
+      volume.type = 'range';
+      volume.min = 0; volume.max = 1; volume.step = 0.01;
+      volume.value = profile.musicVolume;
+      volume.id = 'music-volume';
+      volume.addEventListener('input', () => {
+        profile.musicVolume = Number(volume.value);
+        if(audio) audio.volume = profile.musicVolume;
+        saveProfile();
+      });
+
+      const btnRandom = document.createElement('button');
+      btnRandom.id = 'music-random';
+      btnRandom.textContent = 'Случайный трек';
+      btnRandom.addEventListener('click', () => {
+        profile.musicIndex = Math.floor(Math.random()*profile.musicList.length);
+        select.value = profile.musicIndex;
+        playMusic();
+        saveProfile();
+      });
+
+      musicDiv.appendChild(label);
+      musicDiv.appendChild(select);
+      musicDiv.appendChild(volLabel);
+      musicDiv.appendChild(volume);
+      musicDiv.appendChild(btnRandom);
+
+      profileSection.appendChild(musicDiv);
     }
   }
-}
 
-// --- Инициализация ---
-window.onload = () => {
-  loadFromUrl();
+  // ----------- Звук / Музыка -----------
+
+  let audio = null;
+  function playMusic() {
+    if(audio) {
+      audio.pause();
+      audio = null;
+    }
+    // Для демонстрации используем заглушки
+    // Можно подставить свои ссылки или локальные файлы
+    const src = `https://cdn.pixabay.com/download/audio/2022/03/23/audio_682d7d98f9.mp3?filename=soft-background-music-ambient-14857.mp3`;
+    audio = new Audio(src);
+    audio.loop = true;
+    audio.volume = profile.musicVolume;
+    audio.play().catch(()=>{});
+  }
+
+  // ----------- Инициализация -----------
+
+  function init() {
+    loadProfile();
+    loadRooms();
+    renderFurnitureCatalog();
+    renderRoom(currentRoomIndex);
+    playMusic();
+
+    // Кнопки панели профиля и мебели адаптив
+    const updateButtonsCollapse = () => {
+      const width = window.innerWidth;
+      const collapse = width < 600;
+      [btnProfile, btnFurniture].forEach(btn=>{
+        if(collapse) btn.classList.add('collapsed');
+        else btn.classList.remove('collapsed');
+      });
+    };
+    updateButtonsCollapse();
+    window.addEventListener('resize', updateButtonsCollapse);
+  }
+
   init();
-};
-
-// --- Сразу отрисовать мебель ---
-function updateRoomViewAndFurniture() {
-  updateRoomView();
-  renderRoomFurniture();
-}
-
-// Переключение комнаты + мебель
-function changeRoom(dir) {
-  currentRoomIndex += dir;
-  if(currentRoomIndex < 0) currentRoomIndex = rooms.length -1;
-  if(currentRoomIndex >= rooms.length) currentRoomIndex = 0;
-  updateRoomViewAndFurniture();
-}
-
-function addRoom() {
-  rooms.push(createRoom());
-  currentRoomIndex = rooms.length -1;
-  updateRoomViewAndFurniture();
-}
-
-// Вызов обновления мебели после загрузки комнаты
-function updateRoomView() {
-  roomContainer.innerHTML = "";
-  rooms.forEach((room, i) => {
-    const div = document.createElement("div");
-    div.className = "room" + (i === currentRoomIndex ? " active" : "");
-    div.style.background = room.wallpaper.color;
-    div.textContent = room.name;
-    div.style.position = "absolute";
-    div.style.top = 0;
-    div.style.left = 0;
-    div.style.width = "100%";
-    div.style.height = "100%";
-    roomContainer.appendChild(div);
-  });
-  roomNameSpan.textContent = rooms[currentRoomIndex].name;
-  renderRoomFurniture();
-}
+})();
 </script>
 </body>
 </html>
