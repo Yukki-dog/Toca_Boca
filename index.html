@@ -1856,8 +1856,371 @@ input[type=color], select {
   }
   init();
 
-  // Для теста — откроем профиль сразу (в реальной игре кнопку откроем отдельно)
-  openProfile();
-
 })();
 </script>
+
+<!-- Звуки интерфейса и мебели -->
+<audio id="sound-click" src="sounds/click.wav"></audio>
+<audio id="sound-hover" src="sounds/sh1.wav"></audio>
+<audio id="sound-open-ui" src="sounds/sh2.wav"></audio>
+<audio id="sound-error" src="sounds/error.wav"></audio>
+<audio id="sound-close-ui" src="sounds/close.wav"></audio>
+<audio id="sound-wood" src="sounds/wood.wav"></audio>
+<audio id="sound-soft" src="sounds/kover.wav"></audio>
+<audio id="sound-delete" src="sounds/oh.wav"></audio>
+<audio id="sound-rotate" src="sounds/rotate.wav"></audio>
+<audio id="sound-scroll" src="sounds/scroll.wav"></audio>
+<audio id="sound-on" src="sounds/on.wav"></audio>
+<audio id="sound-off" src="sounds/off.wav"></audio>
+<audio id="sound-shtora" src="sounds/shtora.wav"></audio>
+<audio id="sound-shkaf" src="sounds/shkaf.wav"></audio>
+<audio id="sound-okno" src="sounds/okno.wav"></audio>
+
+<!-- Музыкальный плеер в разделе "Музыка" -->
+<div id="music-tab" class="profile-tab hidden">
+  <h2>Музыка</h2>
+  <div id="music-list">
+    <button onclick="playMusic('1')">Песня 1</button>
+    <button onclick="playMusic('2')">Песня 2</button>
+    <button onclick="playMusic('3')">Песня 3</button>
+    <button onclick="playMusic('4')">Песня 4</button>
+    <button onclick="playMusic('5')">Песня 5</button>
+  </div>
+  <div class="music-controls">
+    <button onclick="randomMusic()">🔀 Рандомная песня</button>
+    <button onclick="adjustVolume(0.1)">🔊 Громче</button>
+    <button onclick="adjustVolume(-0.1)">🔉 Тише</button>
+  </div>
+  <audio id="bg-music" src="" loop></audio>
+</div>
+
+<script>
+let currentVolume = 0.5;
+document.getElementById("bg-music").volume = currentVolume;
+
+function playMusic(track) {
+  const audio = document.getElementById("bg-music");
+  audio.src = `music/${track}.mp3`;
+  audio.play();
+  playSound('click');
+}
+
+function randomMusic() {
+  const n = Math.floor(Math.random() * 5) + 1;
+  playMusic(n.toString());
+}
+
+function adjustVolume(change) {
+  const audio = document.getElementById("bg-music");
+  currentVolume = Math.min(1, Math.max(0, currentVolume + change));
+  audio.volume = currentVolume;
+  playSound('click');
+}
+
+function playSound(id) {
+  const sound = document.getElementById(`sound-${id}`);
+  if (sound) {
+    sound.currentTime = 0;
+    sound.play();
+  }
+}
+
+// Примеры событий с воспроизведением звуков:
+function onUIOpen() {
+  playSound("open-ui");
+}
+
+function onUIClose() {
+  playSound("close-ui");
+}
+
+function onDeleteFurniture() {
+  playSound("delete");
+}
+
+function onRotateFurniture() {
+  playSound("rotate");
+}
+
+function onFurniturePlace(type) {
+  if (type === 'wood') playSound("wood");
+  if (type === 'soft') playSound("soft");
+}
+
+function onWindowToggle() {
+  playSound("okno");
+}
+
+function onCurtainToggle() {
+  playSound("shtora");
+}
+
+function onLightToggle(state) {
+  playSound(state === 'on' ? 'on' : 'off');
+}
+
+function onShkafToggle() {
+  playSound("shkaf");
+}
+</script>
+<!-- Part 6: Аватар, ник, ID и генерация ссылки на квартиру -->
+
+<script>
+// Настройки профиля игрока
+let playerProfile = {
+  nickname: "Игрок",
+  avatarText: "🙂",
+  avatarColor: "#f0f0f0",
+  id: generateID(),
+};
+
+// Генерация ID профиля
+function generateID() {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let id = "";
+  for (let i = 0; i < 6; i++) {
+    id += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return id;
+}
+
+// Обновление интерфейса профиля
+function updateProfileUI() {
+  document.getElementById("nicknameDisplay").textContent = playerProfile.nickname;
+  document.getElementById("avatarDisplay").textContent = playerProfile.avatarText;
+  document.getElementById("avatarDisplay").style.backgroundColor = playerProfile.avatarColor;
+  document.getElementById("idDisplay").textContent = playerProfile.id;
+}
+
+function copyID() {
+  navigator.clipboard.writeText(playerProfile.id);
+  playSound("click");
+  alert("ID скопирован: " + playerProfile.id);
+}
+
+function openAvatarEditor() {
+  document.getElementById("avatarEditor").style.display = "block";
+  playSound("sh2");
+}
+
+function closeAvatarEditor() {
+  document.getElementById("avatarEditor").style.display = "none";
+  playSound("close");
+}
+
+function applyAvatarChanges() {
+  const text = document.getElementById("avatarTextInput").value;
+  const color = document.getElementById("avatarColorInput").value;
+  if (text.length > 2) {
+    playSound("error");
+    alert("На аватарке может быть не больше 2 символов!");
+    return;
+  }
+  playerProfile.avatarText = text;
+  playerProfile.avatarColor = color;
+  closeAvatarEditor();
+  updateProfileUI();
+  playSound("click");
+}
+
+function changeNickname() {
+  const newNick = prompt("Введите новый ник (до 25 символов):", playerProfile.nickname);
+  if (newNick && newNick.length <= 25) {
+    playerProfile.nickname = newNick;
+    updateProfileUI();
+    playSound("click");
+  } else {
+    playSound("error");
+    alert("Некорректный ник!");
+  }
+}
+
+function generateApartmentLink() {
+  const data = {
+    id: playerProfile.id,
+    nickname: playerProfile.nickname,
+    avatarText: playerProfile.avatarText,
+    avatarColor: playerProfile.avatarColor,
+    rooms: roomData, // Предположим, что roomData сериализуется
+  };
+  const encoded = btoa(JSON.stringify(data));
+  const link = `${window.location.origin}?apartment=${encoded}`;
+  navigator.clipboard.writeText(link);
+  playSound("click");
+  alert("Ссылка скопирована в буфер обмена! Отправьте другу!");
+}
+</script>
+
+<!-- UI для профиля -->
+<div id="profileSection" style="display:none; padding: 20px; background: #fff;">
+  <h2>Профиль</h2>
+  <div style="display: flex; align-items: center; gap: 20px;">
+    <div id="avatarDisplay" style="width: 60px; height: 60px; border-radius: 50%; font-size: 24px; display: flex; justify-content: center; align-items: center; background: #eee;"></div>
+    <div>
+      <div><strong>Ник:</strong> <span id="nicknameDisplay"></span></div>
+      <div><strong>ID:</strong> <span id="idDisplay"></span></div>
+    </div>
+  </div>
+  <br>
+  <button onclick="openAvatarEditor()">Изменить аватар</button>
+  <button onclick="changeNickname()">Изменить ник</button>
+  <button onclick="copyID()">Скопировать ID</button>
+  <button onclick="generateApartmentLink()">🔗 Скопировать ссылку на квартиру</button>
+</div>
+
+<!-- Окно редактирования аватара -->
+<div id="avatarEditor" style="display:none; background:#fff; border:1px solid #ccc; padding:20px; position:absolute; top:50px; left:50px;">
+  <h3>Настройка аватарки</h3>
+  <label>Текст (до 2 символов): <input id="avatarTextInput" maxlength="2"></label><br><br>
+  <label>Цвет фона: <input type="color" id="avatarColorInput"></label><br><br>
+  <button onclick="applyAvatarChanges()">Сохранить</button>
+  <button onclick="closeAvatarEditor()">Отмена</button>
+</div>
+
+<script>
+updateProfileUI();
+</script>
+<!-- Part 6 already inserted above -->
+
+<!-- Part 7: Friends List and Interactions -->
+<script>
+// Friends will be generated based on ID info (name, avatar text and color)
+let friends = [];
+
+function showFriendsList() {
+  const container = document.getElementById("friends-list");
+  container.innerHTML = "";
+  friends.forEach(friend => {
+    const item = document.createElement("div");
+    item.className = "friend-item";
+
+    const avatar = document.createElement("div");
+    avatar.className = "friend-avatar";
+    avatar.style.background = friend.avatar.color;
+    avatar.textContent = friend.avatar.text;
+
+    const name = document.createElement("div");
+    name.className = "friend-name";
+    name.textContent = friend.name;
+
+    const id = document.createElement("div");
+    id.className = "friend-id";
+    id.textContent = friend.id;
+
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "friend-btn";
+    copyBtn.textContent = "📋 Копировать ID";
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(friend.id);
+      playSound("click");
+      alert("ID скопирован!");
+    };
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "friend-btn delete";
+    deleteBtn.textContent = "🗑️ Удалить";
+    deleteBtn.onclick = () => {
+      if (confirm(`Удалить ${friend.name} из друзей?`)) {
+        friends = friends.filter(f => f.id !== friend.id);
+        showFriendsList();
+        playSound("oh");
+      }
+    };
+
+    item.appendChild(avatar);
+    item.appendChild(name);
+    item.appendChild(id);
+    item.appendChild(copyBtn);
+    item.appendChild(deleteBtn);
+    container.appendChild(item);
+  });
+}
+
+function addFriendByID(inputID) {
+  const friend = mockFriendSearch(inputID);
+  if (!friend) {
+    alert("Пользователь не найден");
+    playSound("error");
+    return;
+  }
+  if (friends.some(f => f.id === friend.id)) {
+    alert("Этот пользователь уже в друзьях");
+    playSound("error");
+    return;
+  }
+  if (confirm(`Добавить ${friend.name} в друзья?`)) {
+    friends.push(friend);
+    showFriendsList();
+    playSound("click");
+  }
+}
+
+function mockFriendSearch(id) {
+  // In реальности получаем info по ID: name, avatar text, color
+  const decoded = mockDecodeUserID(id);
+  return decoded ? {
+    id,
+    name: decoded.name,
+    avatar: {
+      text: decoded.avatarText,
+      color: decoded.avatarColor
+    },
+    apartmentData: decoded.apartmentData
+  } : null;
+}
+
+function mockDecodeUserID(id) {
+  // Пример расшифровки ID (в реальности это получалось бы с сервера)
+  const fakeDB = {
+    "a1b2c3": { name: "Макс", avatarText: "🎮", avatarColor: "#E0FFFF", apartmentData: "code1" },
+    "d4e5f6": { name: "Ира", avatarText: "🍀", avatarColor: "#FFEFD5", apartmentData: "code2" },
+    "x9z8y7": { name: "Кира", avatarText: "🦄", avatarColor: "#F0EFFF", apartmentData: "code3" }
+  };
+  return fakeDB[id] || null;
+}
+</script>
+
+<style>
+.friend-item {
+  display: flex;
+  align-items: center;
+  margin: 10px;
+  padding: 10px;
+  background: #fefefe;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  gap: 10px;
+}
+.friend-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+.friend-name {
+  flex-grow: 1;
+  font-weight: 500;
+}
+.friend-btn {
+  background: #eee;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.friend-btn:hover {
+  background: #ddd;
+}
+.friend-btn.delete {
+  background: #ffdddd;
+}
+</style>
+
+<div id="friends-list"></div>
+<input type="text" id="add-friend-input" placeholder="Введите ID друга" />
+<button onclick="addFriendByID(document.getElementById('add-friend-input').value)">Добавить друга</button>
+<script>showFriendsList();</script>
